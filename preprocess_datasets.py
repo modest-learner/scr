@@ -1,6 +1,8 @@
 import argparse
 
+print('=== 开始导入模块 ===')
 from src import process_data
+print('=== 模块导入完成 ===')
 
 
 if __name__ == '__main__':

@@ -1,0 +1,25 @@
+# 1. 忽略数据集 (体积过大)
+data/
+dataset.txt
+
+# 2. 忽略模型权重、Checkpoint和训练日志
+save/
+
+# 3. 忽略模型生成的预测结果和评测指标 (运行时会重新生成)
+prediction/
+results/
+
+# 4. 忽略分析生成的 txt 记录文件，但保留 .py 分析脚本
+anaysis/*.txt
+
+# 5. 忽略 Python 编译缓存
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 6. 忽略庞大的环境安装包
+*.whl
+
+# 7. 调试代码文件
+.claude
+.vscode

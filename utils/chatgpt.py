@@ -50,16 +50,20 @@ class ChatGPT:
                 response = client.chat.completions.create(
                     model=self.model_name,
                     messages=query,
-                    extra_body={"enable_thinking": False},
-                    timeout=60,
-                    temperature=0.0
+                    extra_body={
+                        "enable_thinking": False, 
+                        "options": {"num_ctx": 16384}
+                    },
+                    timeout=600,
+                    temperature=0.0,
+                    max_tokens=512
                 )
                 result = response.choices[0].message.content.strip()
-                client.close()
                 return result
             except Exception as e:
                 logger.exception(e)
                 time.sleep(5)
 
-        client.close()
-        return None
+        # 兜底返回：如果重试了 num_retry 次依然失败，返回空字符串作为错误答案，防止下游崩溃
+        logger.error("All retries failed. Returning empty string.")
+        return ""
