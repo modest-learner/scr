@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
     # inference
     parser.add_argument('--test', action='store_true')
+    parser.add_argument('--test-on-train', action='store_true', help='强制在训练集上跑 Beam Search (用于挖掘困难负样本)') # 🌟 新增开关
     parser.add_argument('--checkpoint', default=None, type=str)
     parser.add_argument('--max-hop', type=int, default=10)
     parser.add_argument('--prob-threshold', default=0.02, type=float)

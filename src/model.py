@@ -14,6 +14,7 @@ class CrossModel(nn.Module):
         self.log_t = torch.nn.Parameter(torch.tensor(1.0 / args.temper).log(), requires_grad=True)
         self.max_hop = args.max_hop
         self.num_beam = args.num_beam
+        self.prob_threshold = args.prob_threshold
 
     def forward(self, data):
         graph_embeddings = self.gnn(data['node_attr'], data['edge_index'], data['edge_attr'])
@@ -43,13 +44,13 @@ class CrossModel(nn.Module):
                     nodes = [m]
                     nodes.extend(links[m] - passed_nodes)
                     if len(nodes) == 1:
-                        break
+                        break # 如果除了自己没有别的路可走了（走到死胡同），强制结束寻路
                     text_embeddings = self.encoder(torch.LongTensor([ids]).to(self.log_t.device))[0]
                     text_embeddings = F.normalize(text_embeddings.mean(dim=1), dim=-1)
                     logits = text_embeddings.mm(graph_embeddings[nodes].t())
                     a = torch.argsort(logits[0], descending=True)[0].item()
                     if a == 0:
-                        break
+                        break # 如果最高分是 0 号节点（即节点本身），说明模型认为已经找到答案了，主动停止
                     n = nodes[a]
                     r = edges[(m, n)]
                     ids += r_ids[r] + e_ids[n]
@@ -79,6 +80,8 @@ class CrossModel(nn.Module):
                 passed_nodes.add(sol.node)
                 for idx in indices:
                     prob = sol.prob * probs[idx].item()
+                    if prob < self.prob_threshold:
+                        continue
                     if idx == 0:
                         pred.append(Solution.clone(sol, passed_nodes))
                     else:
@@ -87,6 +90,8 @@ class CrossModel(nn.Module):
                         solutions.append(Solution.walk(sol, sol.ids + r_ids[r] + e_ids[n], r, n, passed_nodes, prob))
 
             solutions = solutions[size:]
+            if not solutions:
+                break
             solutions.sort(key=lambda x: x.prob, reverse=True)
             solutions = solutions[:self.num_beam]
 

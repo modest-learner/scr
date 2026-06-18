@@ -1,0 +1,20 @@
+在训练集上跑 GNN，制造原始错题库
+CUDA_VISIBLE_DEVICES=2 torchrun --nproc_per_node=1 train_gnn.py \
+    --test-on-train \
+    --dataset cwq \
+    --checkpoint save/cwq_3_10_20260610-195304/model.pt
+
+构造燃料——微调材料
+CUDA_VISIBLE_DEVICES=0 python build_fuel.py \
+    --dataset cwq \
+    --gnn-pred-file save/cwq_3_10_20260610-195304/gnn_train_predictions_10_0.02.jsonl
+
+训练RoBERTa过滤器
+CUDA_VISIBLE_DEVICES=0 python train_roberta.py --dataset cwq
+
+测试集命令
+CUDA_VISIBLE_DEVICES=2 torchrun --nproc_per_node=1 train_gnn.py \
+    --test \
+    --dataset webqsp \
+    --checkpoint save/webqsp_3_10_20260610-162231/model.pt
+

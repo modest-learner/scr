@@ -22,7 +22,9 @@ class Trainer:
         dist.init_process_group(backend='nccl')
 
         use_checkpoint = args.checkpoint is not None and osp.exists(args.checkpoint)
-        if not self.args.test:
+        # 🌟 统一判断是否处于推理模式（不论是在 test 还是 train 上跑）
+        is_eval_mode = self.args.test or getattr(self.args, 'test_on_train', False)
+        if not is_eval_mode:
             time = datetime.now().strftime('%Y%m%d-%H%M%S')
             self.save_path = osp.join(args.save_path, f'{args.dataset}_{args.gnn_layers}_{args.num_beam}_{time}')
             os.makedirs(self.save_path, exist_ok=True)
@@ -32,16 +34,22 @@ class Trainer:
             self.train_loader = get_loader(args, 'train')
             self.test_loader = get_loader(args, 'validation')
         else:
-            self.test_loader = get_loader(args, 'test')
+            # 🌟 如果是 test_on_train 开关打开了，就去加载 'train' 的文件，否则加载 'test'
+            split_to_eval = 'train' if getattr(self.args, 'test_on_train', False) else 'test'
+            self.test_loader = get_loader(args, split_to_eval)
             if use_checkpoint:
                 self.save_path = osp.dirname(args.checkpoint)
+            
+            # 🌟 给输出文件加个前缀，区分是测试集还是训练集跑出来的
+            self.output_prefix = 'gnn_train' if getattr(self.args, 'test_on_train', False) else 'beam'
         self.model = CrossModel(args).to(self.rank)
         if use_checkpoint:
             self.model.load_state_dict(torch.load(args.checkpoint, weights_only=False))
         self.model = DDP(self.model, device_ids=[self.rank], output_device=self.rank, find_unused_parameters=True)
 
     def start(self):
-        if self.args.test:
+        # 🌟 确保 test_on_train 也能进入 _evaluate 推理阶段
+        if self.args.test or getattr(self.args, 'test_on_train', False):
             score = self._evaluate()
             if score is not None:
                 logger.info(f'hit = {score * 100:.2f}%')
@@ -116,7 +124,8 @@ class Trainer:
         acc = hit / cnt
         if not greedy:
             objects = self.test_loader.dataset.convert_to_raw_paths(results, self.args.prob_threshold, self.args.num_beam)
-            with open(osp.join(self.save_path, f'beam_predictions_{self.args.max_hop}_{self.args.prob_threshold}.jsonl'), 'w') as fs:
+            # 🌟 使用我们刚才定义的 output_prefix
+            with open(osp.join(self.save_path, f'{self.output_prefix}_predictions_{self.args.max_hop}_{self.args.prob_threshold}.jsonl'), 'w') as fs:
                 for obj in objects:
                     fs.write(json.dumps(obj))
                     fs.write("\n")

@@ -1,0 +1,20 @@
+=== Alpha Parameter Search Results ===
+Dataset: webqsp | Model: Llama-3.1-8B-Instruct | Top-K: 5
+------------------------------------------------------------
+[Alpha: 0.2] -> Evaluated 1628 items:, accuracy = 65.75%, hit = 82.00%, f1 = 63.88%, precision = 72.40%, recall = 65.75%
+[Alpha: 0.3] -> Evaluated 1628 items:, accuracy = 65.79%, hit = 82.06%, f1 = 64.17%, precision = 72.71%, recall = 65.79%
+[Alpha: 0.4] -> Evaluated 1628 items:, accuracy = 65.47%, hit = 81.76%, f1 = 63.95%, precision = 72.60%, recall = 65.47%
+[Alpha: 0.5] -> Evaluated 1628 items:, accuracy = 65.85%, hit = 82.43%, f1 = 64.19%, precision = 72.95%, recall = 65.85%
+[Alpha: 0.6] -> Evaluated 1628 items:, accuracy = 66.03%, hit = 82.43%, f1 = 64.34%, precision = 72.85%, recall = 66.03%
+[Alpha: 0.7] -> Evaluated 1628 items:, accuracy = 66.25%, hit = 82.68%, f1 = 64.62%, precision = 73.27%, recall = 66.25%
+[Alpha: 0.8] -> Evaluated 1628 items:, accuracy = 66.20%, hit = 82.62%, f1 = 64.52%, precision = 73.14%, recall = 66.20%
+=== Alpha Parameter Search Results ===
+Dataset: webqsp | Model: Llama-3.1-8B-Instruct | Top-K: 10
+------------------------------------------------------------
+[Alpha: 0.2] -> Evaluated 1628 items:, accuracy = 70.25%, hit = 83.78%, f1 = 67.29%, precision = 73.29%, recall = 70.25%
+[Alpha: 0.3] -> Evaluated 1628 items:, accuracy = 70.56%, hit = 83.91%, f1 = 67.60%, precision = 73.54%, recall = 70.56%
+[Alpha: 0.4] -> Evaluated 1628 items:, accuracy = 70.67%, hit = 83.91%, f1 = 67.77%, precision = 73.68%, recall = 70.67%
+[Alpha: 0.5] -> Evaluated 1628 items:, accuracy = 70.59%, hit = 84.28%, f1 = 67.80%, precision = 73.83%, recall = 70.59%
+[Alpha: 0.6] -> Evaluated 1628 items:, accuracy = 70.52%, hit = 84.09%, f1 = 67.92%, precision = 74.10%, recall = 70.52%
+[Alpha: 0.7] -> Evaluated 1628 items:, accuracy = 70.20%, hit = 83.66%, f1 = 67.55%, precision = 73.65%, recall = 70.20%
+[Alpha: 0.8] -> Evaluated 1628 items:, accuracy = 70.49%, hit = 83.91%, f1 = 67.55%, precision = 73.60%, recall = 70.49%

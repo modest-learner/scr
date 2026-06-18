@@ -1,0 +1,20 @@
+=== Alpha Parameter Search Results ===
+Dataset: cwq | Model: Llama-3.1-8B-Instruct | Top-K: 5
+------------------------------------------------------------
+[Alpha: 0.2] -> Evaluated 3531 items:, accuracy = 53.91%, hit = 59.56%, f1 = 49.78%, precision = 50.48%, recall = 53.91%
+[Alpha: 0.3] -> Evaluated 3531 items:, accuracy = 53.93%, hit = 59.47%, f1 = 49.85%, precision = 50.55%, recall = 53.93%
+[Alpha: 0.4] -> Evaluated 3531 items:, accuracy = 53.96%, hit = 59.56%, f1 = 49.89%, precision = 50.64%, recall = 53.96%
+[Alpha: 0.5] -> Evaluated 3531 items:, accuracy = 54.13%, hit = 59.87%, f1 = 50.17%, precision = 51.05%, recall = 54.13%
+[Alpha: 0.6] -> Evaluated 3531 items:, accuracy = 54.35%, hit = 60.18%, f1 = 50.32%, precision = 51.23%, recall = 54.35%
+[Alpha: 0.7] -> Evaluated 3531 items:, accuracy = 54.27%, hit = 60.24%, f1 = 50.34%, precision = 51.35%, recall = 54.27%
+[Alpha: 0.8] -> Evaluated 3531 items:, accuracy = 54.12%, hit = 59.93%, f1 = 50.06%, precision = 50.97%, recall = 54.12%
+=== Alpha Parameter Search Results ===
+Dataset: cwq | Model: Llama-3.1-8B-Instruct | Top-K: 10
+------------------------------------------------------------
+[Alpha: 0.2] -> Evaluated 3531 items:, accuracy = 54.60%, hit = 60.41%, f1 = 49.80%, precision = 50.01%, recall = 54.60%
+[Alpha: 0.3] -> Evaluated 3531 items:, accuracy = 54.78%, hit = 60.41%, f1 = 50.00%, precision = 50.16%, recall = 54.78%
+[Alpha: 0.4] -> Evaluated 3531 items:, accuracy = 54.77%, hit = 60.41%, f1 = 50.10%, precision = 50.31%, recall = 54.77%
+[Alpha: 0.5] -> Evaluated 3531 items:, accuracy = 55.03%, hit = 60.63%, f1 = 50.16%, precision = 50.28%, recall = 55.03%
+[Alpha: 0.6] -> Evaluated 3531 items:, accuracy = 55.05%, hit = 60.63%, f1 = 50.16%, precision = 50.35%, recall = 55.05%
+[Alpha: 0.7] -> Evaluated 3531 items:, accuracy = 55.38%, hit = 60.83%, f1 = 50.34%, precision = 50.46%, recall = 55.38%
+[Alpha: 0.8] -> Evaluated 3531 items:, accuracy = 55.30%, hit = 60.80%, f1 = 50.32%, precision = 50.43%, recall = 55.30%

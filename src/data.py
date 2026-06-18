@@ -161,7 +161,7 @@ def process_data(args):
                             args.max_seq_len, args.batch_size, args.num_processes)
 
 
-def load_data(data_dir, dataset, split, plm, max_seq_len, max_batch_len):
+def load_data(data_dir, dataset, split, plm, max_seq_len, max_batch_len, is_eval=False):
     data_path = osp.join(data_dir, f'{dataset}_{split}_{osp.basename(plm)}_{max_seq_len}.pt')
     task = f'{dataset}[{split}]'
     if is_first_proc():
@@ -188,7 +188,7 @@ def load_data(data_dir, dataset, split, plm, max_seq_len, max_batch_len):
         sample['question'].append(data['sep'])
         ent_ids = [data['ent_ids'][i] for i in sample['entities']]
         rel_ids = [data['rel_ids'][i] for i in sample['relations']]
-        if split != 'train':
+        if is_eval:  # 🌟 只要是推理模式，哪怕读的是 train 数据，也乖乖按推理格式解析
             sample.pop('paths')
             sample['links'] = {k: v for k, v in links.items()}
             sample['edges'] = edges
@@ -238,7 +238,8 @@ def load_data(data_dir, dataset, split, plm, max_seq_len, max_batch_len):
                         clone = {k: v for k, v in sample.items()}
                         clone['paths'] = build_batch_input(item)
                         parsed_samples.append(clone)
-    if split == 'train':
+    # 🌟 修复：只有在非推理模式下（真正构建批次数据时），才用 parsed_samples 覆盖原数据
+    if not is_eval:
         data['samples'] = parsed_samples
     return data
 
@@ -268,7 +269,7 @@ def build_batch_input(batch_data):
     return {
         'input_ids': torch.LongTensor(ids_list),
         'attention_mask': torch.LongTensor(mask_list),
-        'links': torch.LongTensor(link_list).view(-1),
+        'links': torch.LongTensor(link_list).view(-1), # view()直接将张量转成一维
         'mask': torch.BoolTensor(batch_mask)
     }
 
@@ -278,9 +279,13 @@ def is_first_proc():
 
 
 def get_loader(args, split):
-    data_list = load_data(args.processed_data_path, args.dataset, split, args.plm, args.max_seq_len, args.max_batch_len)
+    # 🌟 动态判断是不是推理模式
+    is_eval = getattr(args, 'test', False) or getattr(args, 'test_on_train', False)
+    # 🌟 把 is_eval 传给 load_data
+    data_list = load_data(args.processed_data_path, args.dataset, split, args.plm, args.max_seq_len, args.max_batch_len, is_eval=is_eval)
     dataset = SampleDataset(data_list)
-    sampler = DistributedSampler(dataset, shuffle=split == 'train')
+    # 🌟 推理阶段千万不要 shuffle 打乱顺序
+    sampler = DistributedSampler(dataset, shuffle=(not is_eval and split == 'train'))
     return DataLoader(dataset, collate_fn=lambda x: x[0], sampler=sampler, batch_size=1)
 
 
@@ -324,13 +329,26 @@ class SampleDataset(Dataset):
     def convert_to_raw_paths(self, results, prob_threshold, max_num):
         data = self.data
 
+        # 🌟 终极补丁：如果文件里没存文本字典（比如在训练集上），我们直接从 Token ID 逆向解码！
+        if 'raw_entities' not in data:
+            from transformers import AutoTokenizer
+            # 加载我们在预处理时用的 tokenizer
+            tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+            
+            # 逆向解码 (注意：前面 load_data 时我们在末尾加了 [SEP]，这里解码要把最后一个 token 砍掉 [:-1])
+            data['raw_entities'] = [tokenizer.decode(ids[:-1]).strip() for ids in data['ent_ids']]
+            data['raw_relations'] = [tokenizer.decode(ids[:-1]).strip() for ids in data['rel_ids']]
+
         raw_entities, raw_relations = data['raw_entities'], data['raw_relations']
+
         id2sample = {sample['id']: sample for sample in data['samples']}
         objects = []
         for item in results:
             key = item['id']
             sample = id2sample[key]
             prediction = []
+            gnn_probs = [] # 🌟 [新增] 用于保存 GNN 算出的拓扑概率
+            
             for i, sol in enumerate(item['all']):
                 if len(sol['path']) == 0:
                     continue
@@ -339,6 +357,10 @@ class SampleDataset(Dataset):
                 ans = raw_entities[sample['entities'][sol['node']]]
                 if ans.startswith('m.'):
                     continue
+                
+                # 记录这条路径对应的 GNN 概率
+                gnn_probs.append(sol['prob']) 
+                
                 if len(sol['path']) == 0:
                     prediction.append(ANS_TEMPLATE.format(reasoning_path=ans, answer=ans))
                 else:
@@ -350,5 +372,7 @@ class SampleDataset(Dataset):
                         tail = raw_entities[sample['entities'][t]]
                         path_str += f" -> {rel} -> {tail}"
                     prediction.append(ANS_TEMPLATE.format(reasoning_path=path_str, answer=ans))
-            objects.append({"id": key, "prediction": prediction})
+            
+            # 🌟 [新增] 将 gnn_probs 一起保存进 JSONL
+            objects.append({"id": key, "prediction": prediction, "gnn_probs": gnn_probs})
         return objects

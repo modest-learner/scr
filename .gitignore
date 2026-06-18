@@ -1,5 +1,5 @@
 # 1. 忽略数据集 (体积过大)
-data/
+data/*.pt
 dataset.txt
 
 # 2. 忽略模型权重、Checkpoint和训练日志

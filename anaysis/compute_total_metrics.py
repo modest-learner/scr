@@ -3,8 +3,8 @@ import json
 hits, f1s, accs, precisions, recalls = [], [], [], [], []
 
 # 这里换成你实际生成的 metrics.jsonl 路径
-# file_path = "../prediction/webqsp_Llama-3.1-8B-Instruct_rag_metrics.jsonl"
-file_path = "../prediction/cwq_Llama-3.1-8B-Instruct_rag_metrics.jsonl"
+# file_path = "../prediction/init_version/webqsp_Llama-3.1-8B-Instruct_rag_metrics.jsonl"
+file_path = "../prediction/init_version/cwq_Llama-3.1-8B-Instruct_rag_metrics.jsonl"
 
 with open(file_path, "r") as f:
     for line in f:
